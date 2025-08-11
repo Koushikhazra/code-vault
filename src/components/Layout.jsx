@@ -2,11 +2,7 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 import { Home, List, RotateCcw, Moon, Sun, LogOut } from 'lucide-react';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children }) {
   const { 
     user,
     currentPage, 

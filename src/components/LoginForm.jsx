@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock, Mail, UserPlus, LogIn } from 'lucide-react';
 
-interface LoginFormProps {
-  onLogin: (credentials: { email: string; password: string }) => Promise<void>;
-  onRegister: (userData: { username: string; email: string; password: string }) => Promise<void>;
-  loading: boolean;
-  error: string | null;
-}
-
-export function LoginForm({ onLogin, onRegister, loading, error }: LoginFormProps) {
+export function LoginForm({ onLogin, onRegister, loading, error }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -17,7 +10,7 @@ export function LoginForm({ onLogin, onRegister, loading, error }: LoginFormProp
     confirmPassword: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isLogin && formData.password !== formData.confirmPassword) {

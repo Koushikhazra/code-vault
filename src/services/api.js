@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:3001/api';
 
 class ApiService {
-  private getAuthHeaders() {
+  getAuthHeaders() {
     const token = localStorage.getItem('token');
     return {
       'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ class ApiService {
   }
 
   // Auth methods
-  async register(userData: { username: string; email: string; password: string }) {
+  async register(userData) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -25,7 +25,7 @@ class ApiService {
     return response.json();
   }
 
-  async login(credentials: { email: string; password: string }) {
+  async login(credentials) {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +65,7 @@ class ApiService {
     return response.json();
   }
 
-  async createQuestion(questionData: any) {
+  async createQuestion(questionData) {
     const response = await fetch(`${API_BASE_URL}/questions`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
@@ -80,7 +80,7 @@ class ApiService {
     return response.json();
   }
 
-  async updateQuestion(id: string, updates: any) {
+  async updateQuestion(id, updates) {
     const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
@@ -95,7 +95,7 @@ class ApiService {
     return response.json();
   }
 
-  async deleteQuestion(id: string) {
+  async deleteQuestion(id) {
     const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders()
@@ -109,7 +109,7 @@ class ApiService {
     return response.json();
   }
 
-  async getRandomQuestions(count: number = 5) {
+  async getRandomQuestions(count = 5) {
     const response = await fetch(`${API_BASE_URL}/questions/random/${count}`, {
       headers: this.getAuthHeaders()
     });

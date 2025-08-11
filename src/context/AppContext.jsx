@@ -1,38 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Question, Topic, User } from '../types';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 
-interface AppContextType {
-  user: User | null;
-  questions: Question[];
-  topics: Topic[];
-  darkMode: boolean;
-  currentPage: 'home' | 'questions' | 'revision';
-  loading: boolean;
-  error: string | null;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  register: (userData: { username: string; email: string; password: string }) => Promise<void>;
-  logout: () => void;
-  addQuestion: (question: Omit<Question, '_id' | 'createdAt' | 'userId'>) => Promise<void>;
-  updateQuestion: (id: string, updates: Partial<Question>) => Promise<void>;
-  deleteQuestion: (id: string) => Promise<void>;
-  toggleDarkMode: () => void;
-  setCurrentPage: (page: 'home' | 'questions' | 'revision') => void;
-  getRandomQuestions: (count: number) => Promise<Question[]>;
-  getProgress: () => { revised: number; total: number; percentage: number };
-  loadData: () => Promise<void>;
-}
+const AppContext = createContext(undefined);
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
+export function AppProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'home' | 'questions' | 'revision'>('home');
+  const [currentPage, setCurrentPage] = useState('home');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Check for saved token and auto-login
@@ -66,7 +44,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (credentials: { email: string; password: string }) => {
+  const login = async (credentials) => {
     setLoading(true);
     setError(null);
     try {
@@ -82,7 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (userData: { username: string; email: string; password: string }) => {
+  const register = async (userData) => {
     setLoading(true);
     setError(null);
     try {
@@ -119,7 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addQuestion = async (questionData: Omit<Question, '_id' | 'createdAt' | 'userId'>) => {
+  const addQuestion = async (questionData) => {
     try {
       const newQuestion = await apiService.createQuestion(questionData);
       setQuestions(prev => [newQuestion, ...prev]);
@@ -135,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateQuestion = async (id: string, updates: Partial<Question>) => {
+  const updateQuestion = async (id, updates) => {
     try {
       const updatedQuestion = await apiService.updateQuestion(id, updates);
       setQuestions(prev => prev.map(q => 
@@ -147,7 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deleteQuestion = async (id: string) => {
+  const deleteQuestion = async (id) => {
     try {
       await apiService.deleteQuestion(id);
       setQuestions(prev => prev.filter(q => q._id !== id));
@@ -161,7 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setDarkMode(prev => !prev);
   };
 
-  const getRandomQuestions = async (count: number): Promise<Question[]> => {
+  const getRandomQuestions = async (count) => {
     try {
       return await apiService.getRandomQuestions(count);
     } catch (error) {

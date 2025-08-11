@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { RefreshCw, CheckCircle, Code, Eye, EyeOff, Calendar } from 'lucide-react';
-import { Question } from '../types';
 
 export function RevisionPage() {
   const { getRandomQuestions, updateQuestion, questions } = useApp();
-  const [revisionQuestions, setRevisionQuestions] = useState<Question[]>([]);
-  const [expandedCode, setExpandedCode] = useState<Set<string>>(new Set());
+  const [revisionQuestions, setRevisionQuestions] = useState([]);
+  const [expandedCode, setExpandedCode] = useState(new Set());
   const [completedCount, setCompletedCount] = useState(0);
 
   const loadNewQuestions = () => {
-    const newQuestions = getRandomQuestions(5);
-    setRevisionQuestions(newQuestions);
-    setExpandedCode(new Set());
-    setCompletedCount(0);
+    getRandomQuestions(5).then(newQuestions => {
+      setRevisionQuestions(newQuestions);
+      setExpandedCode(new Set());
+      setCompletedCount(0);
+    });
   };
 
   useEffect(() => {
     loadNewQuestions();
   }, [questions]);
 
-  const handleToggleRevised = (questionId: string, isRevised: boolean) => {
+  const handleToggleRevised = (questionId, isRevised) => {
     updateQuestion(questionId, {
       isRevised,
       lastRevisedDate: isRevised ? new Date().toISOString() : null
@@ -43,7 +43,7 @@ export function RevisionPage() {
     }
   };
 
-  const toggleCodeExpansion = (questionId: string) => {
+  const toggleCodeExpansion = (questionId) => {
     const newExpanded = new Set(expandedCode);
     if (newExpanded.has(questionId)) {
       newExpanded.delete(questionId);
@@ -53,7 +53,7 @@ export function RevisionPage() {
     setExpandedCode(newExpanded);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       case 'Medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';

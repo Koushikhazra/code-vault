@@ -1,25 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Search, Filter, Code, Eye, EyeOff, Edit, Trash2, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
-import { Question, FilterBy, DifficultyFilter } from '../types';
+import { Plus, Search, Code, Eye, EyeOff, Edit, Trash2, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
 
 export function QuestionsPage() {
   const { questions, topics, addQuestion, updateQuestion, deleteQuestion } = useApp();
   
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [topicFilter, setTopicFilter] = useState<string>('all');
-  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('all');
-  const [statusFilter, setStatusFilter] = useState<FilterBy>('all');
-  const [expandedCode, setExpandedCode] = useState<Set<string>>(new Set());
-  const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
+  const [topicFilter, setTopicFilter] = useState('all');
+  const [difficultyFilter, setDifficultyFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [expandedCode, setExpandedCode] = useState(new Set());
+  const [expandedTopics, setExpandedTopics] = useState(new Set());
 
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     topic: '',
-    difficulty: 'Easy' as 'Easy' | 'Medium' | 'Hard',
+    difficulty: 'Easy',
     code: '',
     notes: ''
   });
@@ -47,7 +46,7 @@ export function QuestionsPage() {
 
   // Group questions by topic
   const questionsByTopic = useMemo(() => {
-    const grouped: { [key: string]: Question[] } = {};
+    const grouped = {};
     filteredQuestions.forEach(question => {
       if (!grouped[question.topic]) {
         grouped[question.topic] = [];
@@ -80,7 +79,7 @@ export function QuestionsPage() {
     setShowAddModal(false);
   };
 
-  const handleEditQuestion = (question: Question) => {
+  const handleEditQuestion = (question) => {
     setEditingQuestion(question);
     setFormData({
       name: question.name,
@@ -95,20 +94,20 @@ export function QuestionsPage() {
   const handleUpdateQuestion = () => {
     if (!editingQuestion || !formData.name.trim() || !formData.topic.trim()) return;
     
-    updateQuestion(editingQuestion.id, formData);
+    updateQuestion(editingQuestion._id, formData);
     resetForm();
     setEditingQuestion(null);
     setShowAddModal(false);
   };
 
-  const handleToggleRevised = (questionId: string, isRevised: boolean) => {
+  const handleToggleRevised = (questionId, isRevised) => {
     updateQuestion(questionId, {
       isRevised,
       lastRevisedDate: isRevised ? new Date().toISOString() : null
     });
   };
 
-  const toggleCodeExpansion = (questionId: string) => {
+  const toggleCodeExpansion = (questionId) => {
     const newExpanded = new Set(expandedCode);
     if (newExpanded.has(questionId)) {
       newExpanded.delete(questionId);
@@ -118,7 +117,7 @@ export function QuestionsPage() {
     setExpandedCode(newExpanded);
   };
 
-  const toggleTopicExpansion = (topicName: string) => {
+  const toggleTopicExpansion = (topicName) => {
     const newExpanded = new Set(expandedTopics);
     if (newExpanded.has(topicName)) {
       newExpanded.delete(topicName);
@@ -128,7 +127,7 @@ export function QuestionsPage() {
     setExpandedTopics(newExpanded);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       case 'Medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
@@ -182,7 +181,7 @@ export function QuestionsPage() {
             >
               <option value="all">All Topics</option>
               {topics.map(topic => (
-                <option key={topic.id} value={topic.name}>{topic.name}</option>
+                <option key={topic._id} value={topic.name}>{topic.name}</option>
               ))}
             </select>
           </div>
@@ -193,7 +192,7 @@ export function QuestionsPage() {
             </label>
             <select
               value={difficultyFilter}
-              onChange={(e) => setDifficultyFilter(e.target.value as DifficultyFilter)}
+              onChange={(e) => setDifficultyFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">All Difficulties</option>
@@ -209,7 +208,7 @@ export function QuestionsPage() {
             </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as FilterBy)}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">All Questions</option>
@@ -293,7 +292,7 @@ export function QuestionsPage() {
                       </thead>
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {topicQuestions.map((question) => (
-                          <React.Fragment key={question.id}>
+                          <React.Fragment key={question._id}>
                             <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
                               <td className="px-4 py-4">
                                 <input
@@ -446,7 +445,7 @@ export function QuestionsPage() {
                     />
                     <datalist id="topics-list">
                       {topics.map(topic => (
-                        <option key={topic.id} value={topic.name} />
+                        <option key={topic._id} value={topic.name} />
                       ))}
                     </datalist>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -460,7 +459,7 @@ export function QuestionsPage() {
                     </label>
                     <select
                       value={formData.difficulty}
-                      onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as 'Easy' | 'Medium' | 'Hard' })}
+                      onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="Easy">Easy</option>

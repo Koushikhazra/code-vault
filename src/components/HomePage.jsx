@@ -12,12 +12,11 @@ export function HomePage() {
   
   const [searchQuery, setSearchQuery] = useState('');
 
-
   const handleDailyRevision = () => {
     setCurrentPage('revision');
   };
 
-  const getTopicStats = (topicName: string) => {
+  const getTopicStats = (topicName) => {
     const topicQuestions = questions.filter(q => q.topic === topicName);
     const revised = topicQuestions.filter(q => q.isRevised).length;
     return { total: topicQuestions.length, revised };
