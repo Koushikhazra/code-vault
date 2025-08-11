@@ -29,7 +29,7 @@ export function RevisionPage() {
     // Update local state
     setRevisionQuestions(prev => 
       prev.map(q => 
-        q.id === questionId 
+        q._id === questionId 
           ? { ...q, isRevised, lastRevisedDate: isRevised ? new Date().toISOString() : null }
           : q
       )
@@ -105,7 +105,7 @@ export function RevisionPage() {
         <div className="space-y-6">
           {revisionQuestions.map((question, index) => (
             <div
-              key={question.id}
+              key={question._id}
               className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 transition-all ${
                 question.isRevised
                   ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
@@ -137,7 +137,7 @@ export function RevisionPage() {
                       <input
                         type="checkbox"
                         checked={question.isRevised}
-                        onChange={(e) => handleToggleRevised(question.id, e.target.checked)}
+                        onChange={(e) => handleToggleRevised(question._id, e.target.checked)}
                         className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
                       />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -163,10 +163,10 @@ export function RevisionPage() {
                 {question.code && (
                   <div className="mt-4">
                     <button
-                      onClick={() => toggleCodeExpansion(question.id)}
+                      onClick={() => toggleCodeExpansion(question._id)}
                       className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mb-3"
                     >
-                      {expandedCode.has(question.id) ? (
+                      {expandedCode.has(question._id) ? (
                         <>
                           <EyeOff className="w-4 h-4 mr-2" />
                           Hide Solution
@@ -179,7 +179,7 @@ export function RevisionPage() {
                       )}
                     </button>
 
-                    {expandedCode.has(question.id) && (
+                    {expandedCode.has(question._id) && (
                       <div className="space-y-2">
                         <div className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                           <Code className="w-4 h-4 mr-2" />

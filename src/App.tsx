@@ -1,12 +1,24 @@
 import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
+import { LoginForm } from './components/LoginForm';
 import { Layout } from './components/Layout';
 import { HomePage } from './components/HomePage';
 import { QuestionsPage } from './components/QuestionsPage';
 import { RevisionPage } from './components/RevisionPage';
 
 function AppContent() {
-  const { currentPage } = useApp();
+  const { user, currentPage, login, register, loading, error } = useApp();
+
+  if (!user) {
+    return (
+      <LoginForm 
+        onLogin={login}
+        onRegister={register}
+        loading={loading}
+        error={error}
+      />
+    );
+  }
 
   const renderCurrentPage = () => {
     switch (currentPage) {

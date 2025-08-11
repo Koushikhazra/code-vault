@@ -1,5 +1,5 @@
 export interface Question {
-  id: string;
+  _id: string;
   name: string;
   topic: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
@@ -8,20 +8,20 @@ export interface Question {
   isRevised: boolean;
   lastRevisedDate: string | null;
   createdAt: string;
+  userId: string;
 }
 
 export interface Topic {
-  id: string;
+  _id: string;
   name: string;
   createdAt: string;
+  userId: string;
 }
 
-export interface AppData {
-  questions: Question[];
-  topics: Topic[];
-  settings: {
-    darkMode: boolean;
-  };
+export interface User {
+  id: string;
+  username: string;
+  email: string;
 }
 
 export type FilterBy = 'all' | 'revised' | 'not-revised' | 'not-revised-7-days';

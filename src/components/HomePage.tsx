@@ -28,13 +28,14 @@ export function HomePage() {
   );
 
   const pickRandomQuestion = () => {
-    const randomQuestions = getRandomQuestions(1);
-    if (randomQuestions.length > 0) {
-      const question = randomQuestions[0];
-      alert(`Random Question: ${question.name}\nTopic: ${question.topic}\nDifficulty: ${question.difficulty}`);
-    } else {
-      alert('No questions available. Add some questions first!');
-    }
+    getRandomQuestions(1).then(randomQuestions => {
+      if (randomQuestions.length > 0) {
+        const question = randomQuestions[0];
+        alert(`Random Question: ${question.name}\nTopic: ${question.topic}\nDifficulty: ${question.difficulty}`);
+      } else {
+        alert('No questions available. Add some questions first!');
+      }
+    });
   };
 
   return (
@@ -106,7 +107,7 @@ export function HomePage() {
             {filteredQuestions.length > 0 ? (
               <div className="space-y-2">
                 {filteredQuestions.slice(0, 5).map(question => (
-                  <div key={question.id} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                  <div key={question._id} className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <div>
                       <span className="font-medium text-gray-900 dark:text-white">{question.name}</span>
                       <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({question.topic})</span>
@@ -146,7 +147,7 @@ export function HomePage() {
             
             return (
               <div
-                key={topic.id}
+                key={topic._id}
                 className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow group"
               >
                 <div className="flex justify-between items-start mb-3">

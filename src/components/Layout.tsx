@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Home, List, RotateCcw, Moon, Sun, Download, Upload } from 'lucide-react';
+import { Home, List, RotateCcw, Moon, Sun, LogOut } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,39 +8,16 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { 
+    user,
     currentPage, 
     setCurrentPage, 
     darkMode, 
     toggleDarkMode, 
-    exportData, 
-    importData,
+    logout,
     getProgress 
   } = useApp();
 
   const { revised, total, percentage } = getProgress();
-
-  const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const data = JSON.parse(e.target?.result as string);
-            importData(data);
-            alert('Data imported successfully!');
-          } catch (error) {
-            alert('Error importing data. Please check the file format.');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -52,6 +29,10 @@ export function Layout({ children }: LayoutProps) {
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 DSA Revision Hub
               </h1>
+              
+              <div className="hidden sm:flex items-center text-sm text-gray-600 dark:text-gray-300">
+                Welcome, <span className="font-medium ml-1">{user?.username}</span>
+              </div>
               
               <nav className="hidden md:flex space-x-4">
                 <button
@@ -109,32 +90,24 @@ export function Layout({ children }: LayoutProps) {
                 </div>
               </div>
 
-              {/* Export/Import */}
+              {/* Actions */}
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={exportData}
+                  onClick={toggleDarkMode}
                   className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
-                  title="Export Data"
+                  title="Toggle Dark Mode"
                 >
-                  <Download className="w-5 h-5" />
+                  {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </button>
                 
                 <button
-                  onClick={handleImport}
+                  onClick={logout}
                   className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
-                  title="Import Data"
+                  title="Logout"
                 >
-                  <Upload className="w-5 h-5" />
+                  <LogOut className="w-5 h-5" />
                 </button>
               </div>
-
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
-              >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
             </div>
           </div>
         </div>

@@ -299,7 +299,7 @@ export function QuestionsPage() {
                                 <input
                                   type="checkbox"
                                   checked={question.isRevised}
-                                  onChange={(e) => handleToggleRevised(question.id, e.target.checked)}
+                                  onChange={(e) => handleToggleRevised(question._id, e.target.checked)}
                                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                 />
                               </td>
@@ -316,10 +316,10 @@ export function QuestionsPage() {
                               <td className="px-4 py-4">
                                 {question.code && (
                                   <button
-                                    onClick={() => toggleCodeExpansion(question.id)}
+                                    onClick={() => toggleCodeExpansion(question._id)}
                                     className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                                   >
-                                    {expandedCode.has(question.id) ? (
+                                    {expandedCode.has(question._id) ? (
                                       <>
                                         <EyeOff className="w-4 h-4 mr-1" />
                                         Hide Code
@@ -360,7 +360,7 @@ export function QuestionsPage() {
                                     <Edit className="w-4 h-4" />
                                   </button>
                                   <button
-                                    onClick={() => deleteQuestion(question.id)}
+                                    onClick={() => deleteQuestion(question._id)}
                                     className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                     title="Delete Question"
                                   >
@@ -370,7 +370,7 @@ export function QuestionsPage() {
                               </td>
                             </tr>
                             
-                            {expandedCode.has(question.id) && question.code && (
+                            {expandedCode.has(question._id) && question.code && (
                               <tr>
                                 <td colSpan={7} className="px-4 py-4 bg-gray-50 dark:bg-gray-700">
                                   <div className="space-y-2">

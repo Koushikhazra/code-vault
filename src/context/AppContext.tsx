@@ -1,50 +1,44 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Question, Topic, AppData, FilterBy, DifficultyFilter } from '../types';
+import { Question, Topic, User } from '../types';
+import { apiService } from '../services/api';
 
 interface AppContextType {
+  user: User | null;
   questions: Question[];
   topics: Topic[];
   darkMode: boolean;
   currentPage: 'home' | 'questions' | 'revision';
-  addQuestion: (question: Omit<Question, 'id' | 'createdAt'>) => void;
-  updateQuestion: (id: string, updates: Partial<Question>) => void;
-  deleteQuestion: (id: string) => void;
+  loading: boolean;
+  error: string | null;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
+  register: (userData: { username: string; email: string; password: string }) => Promise<void>;
+  logout: () => void;
+  addQuestion: (question: Omit<Question, '_id' | 'createdAt' | 'userId'>) => Promise<void>;
+  updateQuestion: (id: string, updates: Partial<Question>) => Promise<void>;
+  deleteQuestion: (id: string) => Promise<void>;
   toggleDarkMode: () => void;
   setCurrentPage: (page: 'home' | 'questions' | 'revision') => void;
-  exportData: () => void;
-  importData: (data: AppData) => void;
-  getRandomQuestions: (count: number) => Question[];
+  getRandomQuestions: (count: number) => Promise<Question[]>;
   getProgress: () => { revised: number; total: number; percentage: number };
+  loadData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'dsa-revision-hub-data';
-
-const defaultData: AppData = {
-  questions: [],
-  topics: [],
-  settings: { darkMode: false }
-};
-
 export function AppProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [darkMode, setDarkMode] = useState(false);
   const [currentPage, setCurrentPage] = useState<'home' | 'questions' | 'revision'>('home');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const data: AppData = JSON.parse(savedData);
-        setQuestions(data.questions || []);
-        setTopics(data.topics || []);
-        setDarkMode(data.settings?.darkMode || false);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setTopics([]);
-      }
+    // Check for saved token and auto-login
+    const token = localStorage.getItem('token');
+    if (token) {
+      checkAuthStatus();
     }
 
     // Check system preference for dark mode
@@ -54,15 +48,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const data: AppData = {
-      questions,
-      topics,
-      settings: { darkMode }
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [questions, topics, darkMode]);
-
-  useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -70,72 +55,119 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [darkMode]);
 
-  const addQuestion = (questionData: Omit<Question, 'id' | 'createdAt'>) => {
-    // Check if topic exists, if not create it
-    const topicExists = topics.some(topic => topic.name === questionData.topic);
-    if (!topicExists && questionData.topic.trim()) {
-      const newTopic: Topic = {
-        id: Date.now().toString() + '_topic',
-        name: questionData.topic.trim(),
-        createdAt: new Date().toISOString()
-      };
-      setTopics(prev => [...prev, newTopic]);
+  const checkAuthStatus = async () => {
+    try {
+      const response = await apiService.getCurrentUser();
+      setUser(response.user);
+      await loadData();
+    } catch (error) {
+      localStorage.removeItem('token');
+      setUser(null);
     }
-
-    const newQuestion: Question = {
-      ...questionData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    setQuestions(prev => [...prev, newQuestion]);
   };
 
-  const addTopic = (name: string) => {
-    const newTopic: Topic = {
-      id: Date.now().toString(),
-      name,
-      createdAt: new Date().toISOString()
-    };
-    setTopics(prev => [...prev, newTopic]);
+  const login = async (credentials: { email: string; password: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiService.login(credentials);
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+      await loadData();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Login failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateQuestion = (id: string, updates: Partial<Question>) => {
-    setQuestions(prev => prev.map(q => 
-      q.id === id ? { ...q, ...updates } : q
-    ));
+  const register = async (userData: { username: string; email: string; password: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiService.register(userData);
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+      await loadData();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Registration failed');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteQuestion = (id: string) => {
-    setQuestions(prev => prev.filter(q => q.id !== id));
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setQuestions([]);
+    setTopics([]);
+    setCurrentPage('home');
   };
 
+  const loadData = async () => {
+    try {
+      const [questionsData, topicsData] = await Promise.all([
+        apiService.getQuestions(),
+        apiService.getTopics()
+      ]);
+      setQuestions(questionsData);
+      setTopics(topicsData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
+
+  const addQuestion = async (questionData: Omit<Question, '_id' | 'createdAt' | 'userId'>) => {
+    try {
+      const newQuestion = await apiService.createQuestion(questionData);
+      setQuestions(prev => [newQuestion, ...prev]);
+      
+      // Check if topic exists, if not add it to local state
+      const topicExists = topics.some(topic => topic.name === questionData.topic);
+      if (!topicExists) {
+        await loadData(); // Reload to get the new topic
+      }
+    } catch (error) {
+      console.error('Error adding question:', error);
+      throw error;
+    }
+  };
+
+  const updateQuestion = async (id: string, updates: Partial<Question>) => {
+    try {
+      const updatedQuestion = await apiService.updateQuestion(id, updates);
+      setQuestions(prev => prev.map(q => 
+        q._id === id ? updatedQuestion : q
+      ));
+    } catch (error) {
+      console.error('Error updating question:', error);
+      throw error;
+    }
+  };
+
+  const deleteQuestion = async (id: string) => {
+    try {
+      await apiService.deleteQuestion(id);
+      setQuestions(prev => prev.filter(q => q._id !== id));
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      throw error;
+    }
+  };
 
   const toggleDarkMode = () => {
     setDarkMode(prev => !prev);
   };
 
-  const exportData = () => {
-    const data: AppData = { questions, topics, settings: { darkMode } };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dsa-revision-hub-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const importData = (data: AppData) => {
-    if (data.questions) setQuestions(data.questions);
-    if (data.topics) setTopics(data.topics);
-    if (data.settings?.darkMode !== undefined) setDarkMode(data.settings.darkMode);
-  };
-
-  const getRandomQuestions = (count: number): Question[] => {
-    const shuffled = [...questions].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
+  const getRandomQuestions = async (count: number): Promise<Question[]> => {
+    try {
+      return await apiService.getRandomQuestions(count);
+    } catch (error) {
+      console.error('Error getting random questions:', error);
+      return [];
+    }
   };
 
   const getProgress = () => {
@@ -147,19 +179,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
+      user,
       questions,
       topics,
       darkMode,
       currentPage,
+      loading,
+      error,
+      login,
+      register,
+      logout,
       addQuestion,
       updateQuestion,
       deleteQuestion,
       toggleDarkMode,
       setCurrentPage,
-      exportData,
-      importData,
       getRandomQuestions,
-      getProgress
+      getProgress,
+      loadData
     }}>
       {children}
     </AppContext.Provider>
