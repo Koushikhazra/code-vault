@@ -1,7 +1,7 @@
 const express = require('express');
-const Topic = require('../models/Topic');
-const Question = require('../models/Question');
-const auth = require('../middleware/auth');
+const Topic = require('../models/Topic.cjs');
+const Question = require('../models/Question.cjs');
+const auth = require('../middleware/auth.cjs');
 
 const router = express.Router();
 
